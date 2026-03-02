@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Food Delivery — Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --brand: #fc8019;
+    --bg: #fff8f2;
+    --text: #222;
+    --muted: #666;
+    --card: #fff;
+    --border: #eee;
+    --star: #0a8a49;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color: var(--text); background: var(--bg);
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: #fff; border-bottom: 1px solid var(--border);
+  }
+  .nav {
+    max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px;
+  }
+  .logo { font-weight: 800; color: var(--brand); font-size: 20px; letter-spacing: 0.3px; }
+  .loc {
+    display: flex; align-items: center; gap: 8px; margin-left: auto;
+    font-size: 14px; color: var(--muted);
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border);
+    background: #fff; border-radius: 999px; padding: 8px 12px;
+  }
+  .search {
+    max-width: 1100px; margin: 10px auto 12px; padding: 0 16px;
+  }
+  .search input {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px;
+    outline: none; font-size: 15px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  h2 { margin: 10px 0 8px; font-size: 18px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chip {
+    padding: 8px 12px; background: #fff; border: 1px solid var(--border); border-radius: 999px;
+    font-size: 13px; cursor: pointer;
+  }
+  .grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+  }
+  .thumb {
+    height: 140px; background: linear-gradient(135deg, #ffe1cc, #ffd7b7);
+    display: grid; place-items: center; color: #a04e06; font-weight: 700; font-size: 18px;
+  }
+  .content { padding: 12px; display: grid; gap: 6px; }
+  .title { font-weight: 700; }
+  .meta { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  .rating { color: #fff; background: var(--star); border-radius: 6px; padding: 2px 6px; font-weight: 700; }
+  .cta {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px;
+  }
+  button {
+    all: unset; background: var(--brand); color: #fff; padding: 8px 12px; border-radius: 10px;
+    cursor: pointer; font-weight: 700; font-size: 14px;
+  }
+  .cartbar {
+    position: fixed; right: 16px; bottom: 16px; background: #111; color: #fff;
+    padding: 12px 14px; border-radius: 999px; font-weight: 700; box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  }
+  .toolbar { display: flex; gap: 8px; margin: 10px 0 4px; flex-wrap: wrap; }
+  .toolbar button { background: #111; }
+  .empty { text-align: center; color: var(--muted); padding: 24px; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="logo">🍔 Food</div>
+      <div class="pill">🔥 Offers</div>
+      <div class="pill">🚀 Fast Delivery</div>
+      <div class="loc">📍 <span id="locText">Hyderabad</span></div>
+    </div>
+    <div class="search">
+      <input id="searchBox" placeholder="Search restaurants or cuisines (e.g., biryani, pizzas)..." />
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Popular Cuisines</h2>
+    <div class="chips" id="cuisineChips"></div>
+
+    <div class="toolbar">
+      <button id="sortRating">Sort by ⭐ Rating</button>
+      <button id="sortEta">Sort by ⏱ ETA</button>
+      <button id="resetSort">Reset</button>
+    </div>
+
+    <div class="grid" id="cards"></div>
+    <div class="empty" id="empty" style="display:none;">No restaurants match your search.</div>
+  </main>
+
+  <div class="cartbar" id="cartBar">🛒 Cart · 0</div>
+
+<script>
+  const restaurants = [
+    { name: "Paradise Biryani", cuisines: ["Biryani","North Indian"], rating: 4.4, eta: 25, price: "₹₹", tag:"Biryani" },
+    { name: "Pizza Hub", cuisines: ["Pizzas","Italian"], rating: 4.2, eta: 30, price: "₹₹", tag:"Pizza" },
+    { name: "Shah Ghouse", cuisines: ["Biryani","Mughlai"], rating: 4.5, eta: 22, price: "₹₹", tag:"Biryani" },
+    { name: "Asian Wok", cuisines: ["Chinese","Thai"], rating: 4.1, eta: 28, price: "₹₹", tag:"Asian" },
+    { name: "Healthy Bowl", cuisines: ["Salads","Healthy"], rating: 4.0, eta: 20, price: "₹", tag:"Healthy" },
+    { name: "Burger Street", cuisines: ["Burgers","Fast Food"], rating: 4.3, eta: 24, price: "₹₹", tag:"Burgers" },
+    { name: "Tiffin Time", cuisines: ["South Indian","Breakfast"], rating: 4.2, eta: 18, price: "₹", tag:"South" },
+    { name: "Kebab Corner", cuisines: ["Kebabs","Grill"], rating: 4.6, eta: 26, price: "₹₹₹", tag:"Grill" }
+  ];
+
+  const state = {
+    query: "",
+    cuisine: "",
+    sort: "",
+    cartCount: 0
+  };
+
+  const $ = (s) => document.querySelector(s);
+  const cardsEl = $("#cards");
+  const emptyEl = $("#empty");
+  const cartBar = $("#cartBar");
+
+  function renderChips(){
+    const chips = new Set(restaurants.flatMap(r => r.cuisines));
+    const wrap = document.getElementById("cuisineChips");
+    wrap.innerHTML = "";
+    const all = document.createElement("div");
+    all.className = "chip";
+    all.textContent = "All";
+    all.onclick = () => { state.cuisine = ""; draw(); };
+    wrap.appendChild(all);
+    chips.forEach(c => {
+      const el = document.createElement("div");
+      el.className = "chip";
+      el.textContent = c;
+      el.onclick = () => { state.cuisine = c; draw(); };
+      wrap.appendChild(el);
+    });
+  }
+
+  function draw() {
+    let list = [...restaurants];
+    if (state.query) {
+      const q = state.query.toLowerCase();
+      list = list.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        r.cuisines.join(",").toLowerCase().includes(q)
+      );
+    }
+    if (state.cuisine) {
+      list = list.filter(r => r.cuisines.includes(state.cuisine));
+    }
+    if (state.sort === "rating") list.sort((a,b)=>b.rating-a.rating);
+    if (state.sort === "eta") list.sort((a,b)=>a.eta-b.eta);
+
+    cardsEl.innerHTML = "";
+    if (!list.length) {
+      emptyEl.style.display = "block";
+      return;
+    } else emptyEl.style.display = "none";
+
+    list.forEach(r => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="thumb">${r.tag}</div>
+        <div class="content">
+          <div class="title">${r.name}</div>
+          <div class="meta">
+            <span class="rating">⭐ ${r.rating.toFixed(1)}</span>
+            <span>⏱ ${r.eta} mins</span>
+            <span>${r.price}</span>
+          </div>
+          <div class="meta">${r.cuisines.join(" • ")}</div>
+          <div class="cta">
+            <div class="meta">Free Delivery above ₹199</div>
+            <button>Add</button>
+          </div>
+        </div>
+      `;
+      card.querySelector("button").onclick = () => {
+        state.cartCount++;
+        cartBar.textContent = `🛒 Cart · ${state.cartCount}`;
+      };
+      cardsEl.appendChild(card);
+    });
+  }
+
+  document.getElementById("searchBox").addEventListener("input", (e) => {
+    state.query = e.target.value.trim();
+    draw();
+  });
+  document.getElementById("sortRating").onclick = () => { state.sort = "rating"; draw(); };
+  document.getElementById("sortEta").onclick = () => { state.sort = "eta"; draw(); };
+  document.getElementById("resetSort").onclick = () => { state.sort = ""; draw(); };
+
+  renderChips();
+  draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Genie — Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --brand:#00c2a8; --bg:#f2fffd; --text:#222; --muted:#666; --border:#e9f5f3; --card:#fff; --accent:#0a8a49;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);z-index:10}
+  .nav{max-width:900px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center}
+  .logo{font-weight:900;color:var(--brand);font-size:20px}
+  .container{max-width:900px;margin:0 auto;padding:16px;display:grid;gap:12px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:0 6px 16px rgba(0,0,0,.05)}
+  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+  input,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;outline:none}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){.grid{grid-template-columns:1fr}}
+  button{all:unset;background:var(--brand);color:#fff;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer;text-align:center}
+  .row{display:flex;gap:10px;align-items:center}
+  .price{font-weight:900}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:#0f172a;color:#fff;border-radius:999px;padding:6px 10px;font-size:12px}
+  .status{display:grid;gap:8px}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="logo">📦 Genie</div>
+      <span class="badge">⏱ 30–60 min</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label>Pickup Address</label>
+          <input id="pickup" placeholder="e.g., Madhapur, Hyderabad" />
+        </div>
+        <div>
+          <label>Drop Address</label>
+          <input id="drop" placeholder="e.g., Gachibowli, Hyderabad" />
+        </div>
+        <div>
+          <label>Item Type</label>
+          <select id="itemType">
+            <option>Documents</option>
+            <option>Food</option>
+            <option>Package</option>
+          </select>
+        </div>
+        <div>
+          <label>Distance (km)</label>
+          <input id="km" type="number" min="1" value="5" />
+        </div>
+        <div>
+          <label>Weight (kg)</label>
+          <input id="wt" type="number" min="0.1" step="0.1" value="1" />
+        </div>
+        <div>
+          <label>Preferred Vehicle</label>
+          <select id="vehicle">
+            <option>Bike</option>
+            <option>Auto</option>
+            <option>Car</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px; justify-content:space-between;">
+        <div>
+          <div class="muted">Est. Fare</div>
+          <div class="price" id="fare">₹—</div>
+        </div>
+        <div class="row">
+          <button id="calc">Calculate</button>
+          <button id="book">Request Pickup</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card status" id="status" style="display:none;">
+      <div class="badge">Order <span id="oid"></span></div>
+      <div>📍 <strong id="sumFrom"></strong> → <strong id="sumTo"></strong></div>
+      <div>🧲 Status: <span id="stage">Searching for a partner…</span></div>
+      <div class="muted">ETA: <span id="eta">—</span></div>
+    </div>
+  </main>
+
+<script>
+  const pickup = document.getElementById("pickup");
+  const drop = document.getElementById("drop");
+  const km = document.getElementById("km");
+  const wt = document.getElementById("wt");
+  const vehicle = document.getElementById("vehicle");
+  const itemType = document.getElementById("itemType");
+  const fareEl = document.getElementById("fare");
+  const calcBtn = document.getElementById("calc");
+  const bookBtn = document.getElementById("book");
+
+  function estimateFare() {
+    const d = Math.max(1, +km.value || 1);
+    const w = Math.max(0.1, +wt.value || 0.1);
+    const v = vehicle.value;
+    // Simple demo formula
+    const baseByVehicle = { Bike: 35, Auto: 45, Car: 60 }[v] || 35;
+    const perKm = { Bike: 8, Auto: 10, Car: 14 }[v] || 8;
+    const weightFee = Math.max(0, (w - 1)) * 5;
+    const typeFee = { Documents: 0, Food: 5, Package: 10 }[itemType.value] || 0;
+    const total = Math.round(baseByVehicle + d * perKm + weightFee + typeFee);
+    fareEl.textContent = `₹${total}`;
+    return total;
+  }
+
+  calcBtn.onclick = estimateFare;
+
+  function randomId() {
+    return "GN" + Math.floor(100000 + Math.random()*900000);
+  }
+
+  const statusCard = document.getElementById("status");
+  const oidEl = document.getElementById("oid");
+  const sumFrom = document.getElementById("sumFrom");
+  const sumTo = document.getElementById("sumTo");
+  const stageEl = document.getElementById("stage");
+  const etaEl = document.getElementById("eta");
+
+  bookBtn.onclick = () => {
+    if (!pickup.value || !drop.value) { alert("Please enter pickup & drop"); return; }
+    const total = estimateFare();
+    statusCard.style.display = "grid";
+    oidEl.textContent = randomId();
+    sumFrom.textContent = pickup.value;
+    sumTo.textContent = drop.value;
+    stageEl.textContent = "Looking for a delivery partner…";
+    etaEl.textContent = "45–60 mins";
+
+    // Simulated status progression
+    setTimeout(()=> stageEl.textContent = "Partner assigned: Ravi (Bike) 🚲", 1500);
+    setTimeout(()=> stageEl.textContent = "Partner at pickup location", 3500);
+    setTimeout(()=> { stageEl.textContent = "Picked up · On the way"; etaEl.textContent = "20–30 mins"; }, 5500);
+    setTimeout(()=> stageEl.textContent = "Delivered ✅ · Fare " + fareEl.textContent, 9000);
+  };
+
+  // initial fare
+  estimateFare();
+</script>
+</body>
+</html>

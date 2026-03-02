@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Instamart — Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --brand: #7b3ff2;
+    --bg: #f7f3ff;
+    --card: #fff;
+    --muted: #666;
+    --border: #eee;
+    --text: #222;
+    --ok: #0a8a49;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, Segoe UI, Roboto, sans-serif; color: var(--text); background: var(--bg); }
+  header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--border); }
+  .nav { max-width: 1100px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 10px; align-items: center; }
+  .logo { font-weight: 900; color: var(--brand); font-size: 20px; }
+  .search { margin-left: auto; flex: 1; max-width: 520px; }
+  .search input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .cats { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 14px; }
+  .chip { padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  @media (max-width: 1024px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: grid; gap: 6px; }
+  .thumb { height: 90px; border-radius: 10px; background: linear-gradient(135deg,#e5d9ff,#d9c6ff); display: grid; place-items: center; color: #43207a; font-weight: 700; }
+  .name { font-weight: 700; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .price { font-weight: 800; }
+  button { all: unset; cursor: pointer; padding: 8px 10px; background: var(--brand); color: #fff; border-radius: 8px; font-weight: 700; }
+  .qty {
+    display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px;
+  }
+  .bar {
+    position: sticky; bottom: 0; background: #111; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .ok { color: var(--ok); font-weight: 700; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="logo">🛒 Instamart</div>
+      <div class="search"><input id="q" placeholder="Search fruits, milk, bread, chips..." /></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="cats" id="cats"></div>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <div class="bar">
+    <div id="summary">Cart: 0 items · ₹0</div>
+    <button id="checkout">Checkout</button>
+  </div>
+
+<script>
+  const products = [
+    { id:1, name:"Banana", cat:"Fruits", unit:"1 Dozen", price:49 },
+    { id:2, name:"Apple", cat:"Fruits", unit:"1 Kg", price:169 },
+    { id:3, name:"Milk", cat:"Dairy", unit:"1 L", price:56 },
+    { id:4, name:"Curd", cat:"Dairy", unit:"500 ml", price:35 },
+    { id:5, name:"Bread", cat:"Bakery", unit:"400 g", price:45 },
+    { id:6, name:"Eggs", cat:"Dairy", unit:"6 pcs", price:52 },
+    { id:7, name:"Chips - Salt", cat:"Snacks", unit:"80 g", price:20 },
+    { id:8, name:"Chocolates", cat:"Snacks", unit:"100 g", price:60 },
+    { id:9, name:"Tomato", cat:"Vegetables", unit:"1 Kg", price:39 },
+    { id:10, name:"Onion", cat:"Vegetables", unit:"1 Kg", price:35 },
+    { id:11, name:"Detergent", cat:"Household", unit:"1 Kg", price:199 },
+    { id:12, name:"Soap", cat:"Household", unit:"4 pcs", price:89 },
+  ];
+
+  const state = { q:"", cat:"", cart: {} };
+
+  const catsEl = document.getElementById("cats");
+  const gridEl = document.getElementById("grid");
+  const qEl = document.getElementById("q");
+  const summaryEl = document.getElementById("summary");
+
+  function renderCats() {
+    const cats = ["All", ...new Set(products.map(p=>p.cat))];
+    catsEl.innerHTML = "";
+    cats.forEach(c => {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.textContent = c;
+      chip.onclick = () => { state.cat = (c==="All"?"":c); draw(); };
+      catsEl.appendChild(chip);
+    });
+  }
+
+  function addToCart(id) {
+    state.cart[id] = (state.cart[id] || 0) + 1;
+    updateSummary();
+    draw();
+  }
+  function changeQty(id, delta) {
+    state.cart[id] = Math.max(0, (state.cart[id] || 0) + delta);
+    if (state.cart[id] === 0) delete state.cart[id];
+    updateSummary();
+    draw();
+  }
+
+  function updateSummary() {
+    const ids = Object.keys(state.cart);
+    let items = 0, amount = 0;
+    ids.forEach(id=>{
+      const p = products.find(x=>x.id == id);
+      const qty = state.cart[id];
+      items += qty;
+      amount += qty * p.price;
+    });
+    summaryEl.textContent = `Cart: ${items} items · ₹${amount}`;
+  }
+
+  function draw() {
+    let list = [...products];
+    if (state.q) list = list.filter(p => (p.name+" "+p.unit).toLowerCase().includes(state.q));
+    if (state.cat) list = list.filter(p => p.cat === state.cat);
+
+    gridEl.innerHTML = "";
+    list.forEach(p=>{
+      const qty = state.cart[p.id] || 0;
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <div class="thumb">${p.cat}</div>
+        <div class="name">${p.name}</div>
+        <div class="meta">${p.unit}</div>
+        <div class="row">
+          <div class="price">₹${p.price}</div>
+          ${qty === 0
+            ? `<button data-id="${p.id}">Add</button>`
+            : `<div class="qty">
+                 <strong style="cursor:pointer" data-dec="${p.id}">−</strong>
+                 <span>${qty}</span>
+                 <strong style="cursor:pointer" data-inc="${p.id}">+</strong>
+               </div>`
+          }
+        </div>
+        <div class="meta ok">Delivery in 10-20 mins</div>
+      `;
+      gridEl.appendChild(el);
+    });
+
+    gridEl.querySelectorAll("button[data-id]").forEach(b=>{
+      b.onclick = ()=> addToCart(+b.dataset.id);
+    });
+    gridEl.querySelectorAll("[data-inc]").forEach(b=>{
+      b.onclick = ()=> changeQty(+b.dataset.inc, +1);
+    });
+    gridEl.querySelectorAll("[data-dec]").forEach(b=>{
+      b.onclick = ()=> changeQty(+b.dataset.dec, -1);
+    });
+  }
+
+  qEl.addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); draw(); });
+  document.getElementById("checkout").onclick = ()=> alert("Checkout flow coming soon 🚀");
+
+  renderCats();
+  updateSummary();
+  draw();
+</script>
+</body>
+</html>
