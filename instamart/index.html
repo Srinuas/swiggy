@@ -1,172 +1,165 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Instamart — Demo</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-  :root {
-    --brand: #7b3ff2;
-    --bg: #f7f3ff;
-    --card: #fff;
-    --muted: #666;
-    --border: #eee;
-    --text: #222;
-    --ok: #0a8a49;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: system-ui, Segoe UI, Roboto, sans-serif; color: var(--text); background: var(--bg); }
-  header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--border); }
-  .nav { max-width: 1100px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 10px; align-items: center; }
-  .logo { font-weight: 900; color: var(--brand); font-size: 20px; }
-  .search { margin-left: auto; flex: 1; max-width: 520px; }
-  .search input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
-  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
-  .cats { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 14px; }
-  .chip { padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 13px; }
-  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-  @media (max-width: 1024px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 560px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: grid; gap: 6px; }
-  .thumb { height: 90px; border-radius: 10px; background: linear-gradient(135deg,#e5d9ff,#d9c6ff); display: grid; place-items: center; color: #43207a; font-weight: 700; }
-  .name { font-weight: 700; }
-  .meta { color: var(--muted); font-size: 13px; }
-  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .price { font-weight: 800; }
-  button { all: unset; cursor: pointer; padding: 8px 10px; background: var(--brand); color: #fff; border-radius: 8px; font-weight: 700; }
-  .qty {
-    display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px;
-  }
-  .bar {
-    position: sticky; bottom: 0; background: #111; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
-  }
-  .ok { color: var(--ok); font-weight: 700; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swiggy Instamart - Groceries Delivered in 10 Minutes</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <div class="logo">🛒 Instamart</div>
-      <div class="search"><input id="q" placeholder="Search fruits, milk, bread, chips..." /></div>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="logo-swiggy">Swiggy</span>
+      <span class="logo-instamart">INSTAMART</span>
     </div>
+    <div class="delivery-eta">
+      <span class="bolt-icon">⚡</span>
+      <div class="eta-text">
+        <strong>Delivery in 10 MINS</strong>
+        <p>Bandra West • Superfast Dark Store</p>
+      </div>
+    </div>
+    <button class="btn-cart" onclick="toggleCart()">
+      🛒 Cart (<span id="cart-count">0</span>)
+    </button>
   </header>
 
-  <main class="container">
-    <div class="cats" id="cats"></div>
-    <div class="grid" id="grid"></div>
-  </main>
+  <!-- Hero Search & Offers -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="tagline">10,000+ Everyday Essentials</span>
+      <h1>Fresh Groceries & Snacks <span>in Minutes</span></h1>
+      
+      <div class="search-bar">
+        <input type="text" id="item-search" placeholder="Search 'milk', 'chips', 'mangoes', or 'butter'..." onkeyup="filterCatalog()">
+        <button class="btn-search">Search</button>
+      </div>
+    </div>
+  </section>
 
-  <div class="bar">
-    <div id="summary">Cart: 0 items · ₹0</div>
-    <button id="checkout">Checkout</button>
+  <!-- Main Store Section -->
+  <section class="store-container">
+    
+    <!-- Left Category Sidebar -->
+    <aside class="sidebar">
+      <h3>Categories</h3>
+      <ul class="category-list">
+        <li class="active" onclick="filterCategory('all', this)"> All Items</li>
+        <li onclick="filterCategory('dairy', this)">🥛 Dairy & Milk</li>
+        <li onclick="filterCategory('fresh', this)">🍎 Fruits & Veggies</li>
+        <li onclick="filterCategory('munchies', this)">🍟 Munchies & Chips</li>
+        <li onclick="filterCategory('drinks', this)">🥤 Cold Drinks & Juices</li>
+      </ul>
+    </aside>
+
+    <!-- Right Item Grid -->
+    <main class="catalog">
+      <div class="section-header">
+        <h2 id="category-title">All Essentials</h2>
+        <span class="guarantee">⚡ Instant Packing Guarantee</span>
+      </div>
+
+      <div class="card-grid" id="product-grid">
+
+        <!-- Product 1 -->
+        <div class="product-card" data-category="dairy" data-name="amul taaza fresh milk pouch">
+          <div class="eta-badge">⏱ 8 mins</div>
+          <div class="product-img">
+            <img src="https://encrypted-tbn1.gstatic.com/licensed-image?q=tbn:ANd9GcQIHBocPZLCSRFxIEmBuJy1bxQKunRotDjyV9UXh5xb-D_ilptDk1oUZKm7pzCriTISS_IzLqsUZImh_IQ" alt="Amul Milk">
+          </div>
+          <div class="product-info">
+            <span class="weight">500 ml</span>
+            <h4>Amul Taaza Toned Milk</h4>
+            <div class="price-row">
+              <span class="price">₹27</span>
+              <button class="btn-add" onclick="addToCart('Amul Taaza Milk', 27)">ADD</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="product-card" data-category="munchies" data-name="lays classic salted potato chips">
+          <div class="eta-badge">⏱ 10 mins</div>
+          <div class="product-img">
+            <img src="https://encrypted-tbn1.gstatic.com/licensed-image?q=tbn:ANd9GcSYSn4aDI-zWiIXo5RfxdY_R7KCfMIeLHMt3RNKYcDKyhvJ9jLLO8Sz_aRNHZG69eOEzaPTVMk4VeMIbfQ" alt="Lays Chips">
+          </div>
+          <div class="product-info">
+            <span class="weight">50 g</span>
+            <h4>Lay's Salted Potato Chips</h4>
+            <div class="price-row">
+              <span class="price">₹20</span>
+              <button class="btn-add" onclick="addToCart('Lays Chips', 20)">ADD</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 3 -->
+        <div class="product-card" data-category="fresh" data-name="fresh organic robusta bananas">
+          <div class="eta-badge">⏱ 7 mins</div>
+          <div class="product-img">
+            <img src="https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcQwwZkrUTSz5NfjJPE9dTHuzEXXThzyxBS_LTbFDuc1q67gWTW7eQgb7qmKNyR_Qx58KlBgbPjD8L0WclI" alt="Bananas">
+          </div>
+          <div class="product-info">
+            <span class="weight">6 pcs (~800g)</span>
+            <h4>Fresh Robusta Bananas</h4>
+            <div class="price-row">
+              <span class="price">₹42</span>
+              <button class="btn-add" onclick="addToCart('Fresh Bananas', 42)">ADD</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 4 -->
+        <div class="product-card" data-category="drinks" data-name="coca cola soft drink zero sugar">
+          <div class="eta-badge">⏱ 9 mins</div>
+          <div class="product-img">
+            <img src="https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcTVdCAgiIGj8P4YrpGwdQHrstFXiZugtHNxyHYsjCgSudy1NLF303wvvryNpNup1L4gNyVr5MtSzmBmT6g" alt="Coca Cola">
+          </div>
+          <div class="product-info">
+            <span class="weight">750 ml</span>
+            <h4>Coca-Cola Zero Sugar</h4>
+            <div class="price-row">
+              <span class="price">₹45</span>
+              <button class="btn-add" onclick="addToCart('Coca-Cola 750ml', 45)">ADD</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </section>
+
+  <!-- Slide-out Cart Drawer -->
+  <div id="cart-drawer" class="cart-drawer">
+    <div class="drawer-header">
+      <h3>Instamart Basket ⚡</h3>
+      <span class="close-drawer" onclick="toggleCart()">&times;</span>
+    </div>
+    
+    <div class="cart-items" id="cart-items-list">
+      <p class="empty-msg">Your basket is empty. Add items to deliver in 10 mins!</p>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="bill-row">
+        <span>Delivery Fee (10 min speed)</span>
+        <span style="color:#10b981; font-weight:700;">FREE</span>
+      </div>
+      <div class="bill-row total">
+        <span>Subtotal</span>
+        <span id="cart-total">₹0</span>
+      </div>
+      <button class="btn-checkout" onclick="checkout()">Proceed to Pay</button>
+    </div>
   </div>
 
-<script>
-  const products = [
-    { id:1, name:"Banana", cat:"Fruits", unit:"1 Dozen", price:49 },
-    { id:2, name:"Apple", cat:"Fruits", unit:"1 Kg", price:169 },
-    { id:3, name:"Milk", cat:"Dairy", unit:"1 L", price:56 },
-    { id:4, name:"Curd", cat:"Dairy", unit:"500 ml", price:35 },
-    { id:5, name:"Bread", cat:"Bakery", unit:"400 g", price:45 },
-    { id:6, name:"Eggs", cat:"Dairy", unit:"6 pcs", price:52 },
-    { id:7, name:"Chips - Salt", cat:"Snacks", unit:"80 g", price:20 },
-    { id:8, name:"Chocolates", cat:"Snacks", unit:"100 g", price:60 },
-    { id:9, name:"Tomato", cat:"Vegetables", unit:"1 Kg", price:39 },
-    { id:10, name:"Onion", cat:"Vegetables", unit:"1 Kg", price:35 },
-    { id:11, name:"Detergent", cat:"Household", unit:"1 Kg", price:199 },
-    { id:12, name:"Soap", cat:"Household", unit:"4 pcs", price:89 },
-  ];
+  <footer>
+    <p>© 2026 Swiggy Instamart Clone. Crafted with HTML, CSS, JavaScript, and Docker.</p>
+  </footer>
 
-  const state = { q:"", cat:"", cart: {} };
-
-  const catsEl = document.getElementById("cats");
-  const gridEl = document.getElementById("grid");
-  const qEl = document.getElementById("q");
-  const summaryEl = document.getElementById("summary");
-
-  function renderCats() {
-    const cats = ["All", ...new Set(products.map(p=>p.cat))];
-    catsEl.innerHTML = "";
-    cats.forEach(c => {
-      const chip = document.createElement("div");
-      chip.className = "chip";
-      chip.textContent = c;
-      chip.onclick = () => { state.cat = (c==="All"?"":c); draw(); };
-      catsEl.appendChild(chip);
-    });
-  }
-
-  function addToCart(id) {
-    state.cart[id] = (state.cart[id] || 0) + 1;
-    updateSummary();
-    draw();
-  }
-  function changeQty(id, delta) {
-    state.cart[id] = Math.max(0, (state.cart[id] || 0) + delta);
-    if (state.cart[id] === 0) delete state.cart[id];
-    updateSummary();
-    draw();
-  }
-
-  function updateSummary() {
-    const ids = Object.keys(state.cart);
-    let items = 0, amount = 0;
-    ids.forEach(id=>{
-      const p = products.find(x=>x.id == id);
-      const qty = state.cart[id];
-      items += qty;
-      amount += qty * p.price;
-    });
-    summaryEl.textContent = `Cart: ${items} items · ₹${amount}`;
-  }
-
-  function draw() {
-    let list = [...products];
-    if (state.q) list = list.filter(p => (p.name+" "+p.unit).toLowerCase().includes(state.q));
-    if (state.cat) list = list.filter(p => p.cat === state.cat);
-
-    gridEl.innerHTML = "";
-    list.forEach(p=>{
-      const qty = state.cart[p.id] || 0;
-      const el = document.createElement("div");
-      el.className = "card";
-      el.innerHTML = `
-        <div class="thumb">${p.cat}</div>
-        <div class="name">${p.name}</div>
-        <div class="meta">${p.unit}</div>
-        <div class="row">
-          <div class="price">₹${p.price}</div>
-          ${qty === 0
-            ? `<button data-id="${p.id}">Add</button>`
-            : `<div class="qty">
-                 <strong style="cursor:pointer" data-dec="${p.id}">−</strong>
-                 <span>${qty}</span>
-                 <strong style="cursor:pointer" data-inc="${p.id}">+</strong>
-               </div>`
-          }
-        </div>
-        <div class="meta ok">Delivery in 10-20 mins</div>
-      `;
-      gridEl.appendChild(el);
-    });
-
-    gridEl.querySelectorAll("button[data-id]").forEach(b=>{
-      b.onclick = ()=> addToCart(+b.dataset.id);
-    });
-    gridEl.querySelectorAll("[data-inc]").forEach(b=>{
-      b.onclick = ()=> changeQty(+b.dataset.inc, +1);
-    });
-    gridEl.querySelectorAll("[data-dec]").forEach(b=>{
-      b.onclick = ()=> changeQty(+b.dataset.dec, -1);
-    });
-  }
-
-  qEl.addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); draw(); });
-  document.getElementById("checkout").onclick = ()=> alert("Checkout flow coming soon 🚀");
-
-  renderCats();
-  updateSummary();
-  draw();
-</script>
+  <script src="script.js"></script>
 </body>
 </html>

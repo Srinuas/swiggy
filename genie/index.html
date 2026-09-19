@@ -1,153 +1,153 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Genie — Demo</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-  :root {
-    --brand:#00c2a8; --bg:#f2fffd; --text:#222; --muted:#666; --border:#e9f5f3; --card:#fff; --accent:#0a8a49;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
-  header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);z-index:10}
-  .nav{max-width:900px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center}
-  .logo{font-weight:900;color:var(--brand);font-size:20px}
-  .container{max-width:900px;margin:0 auto;padding:16px;display:grid;gap:12px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:0 6px 16px rgba(0,0,0,.05)}
-  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
-  input,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;outline:none}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media (max-width:720px){.grid{grid-template-columns:1fr}}
-  button{all:unset;background:var(--brand);color:#fff;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer;text-align:center}
-  .row{display:flex;gap:10px;align-items:center}
-  .price{font-weight:900}
-  .badge{display:inline-flex;align-items:center;gap:6px;background:#0f172a;color:#fff;border-radius:999px;padding:6px 10px;font-size:12px}
-  .status{display:grid;gap:8px}
-  .muted{color:var(--muted)}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swiggy Genie - Pick Up & Drop Anything Instantly</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <div class="logo">📦 Genie</div>
-      <span class="badge">⏱ 30–60 min</span>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="logo-swiggy">Swiggy</span>
+      <span class="logo-genie">GENIE</span>
     </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="#services">What We Deliver</a></li>
+        <li><a href="#booking">Book Genie</a></li>
+        <li><a href="#track">Active Deliveries (<span id="active-count">0</span>)</a></li>
+      </ul>
+    </nav>
+    <button class="btn-help">⚡ Instant Support</button>
   </header>
 
-  <main class="container">
-    <div class="card">
-      <div class="grid">
-        <div>
-          <label>Pickup Address</label>
-          <input id="pickup" placeholder="e.g., Madhapur, Hyderabad" />
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-text">
+      <span class="tagline">Personal Runner Service</span>
+      <h1>Send or Receive <span>Anything, Anywhere</span></h1>
+      <p>Forgotten keys, documents, lunch boxes, or medicine? Swiggy Genie delivers across town in minutes.</p>
+
+      <!-- Interactive Booking Widget -->
+      <div id="booking" class="booking-card">
+        <h3>Schedule Pick-up & Drop</h3>
+        
+        <div class="input-group">
+          <label>Pick-up Address</label>
+          <input type="text" id="pickup-addr" placeholder="e.g. Home, Indiranagar 10th Main">
         </div>
-        <div>
+
+        <div class="input-group">
           <label>Drop Address</label>
-          <input id="drop" placeholder="e.g., Gachibowli, Hyderabad" />
+          <input type="text" id="drop-addr" placeholder="e.g. Office, Tech Park Gate 2">
         </div>
-        <div>
-          <label>Item Type</label>
-          <select id="itemType">
-            <option>Documents</option>
-            <option>Food</option>
-            <option>Package</option>
-          </select>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label>Category</label>
+            <select id="item-category" onchange="calculateFare()">
+              <option value="documents">Documents / Books</option>
+              <option value="lunchbox">Home Food / Tiffin</option>
+              <option value="clothes">Clothes / Laundry</option>
+              <option value="electronics">Electronics / Charger</option>
+              <option value="groceries">Medicine / Essentials</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Est. Distance (km)</label>
+            <input type="number" id="distance" value="3" min="1" max="30" onchange="calculateFare()">
+          </div>
         </div>
-        <div>
-          <label>Distance (km)</label>
-          <input id="km" type="number" min="1" value="5" />
+
+        <div class="fare-banner">
+          <span>Estimated Fare:</span>
+          <span class="fare-price" id="fare-price">₹60</span>
         </div>
-        <div>
-          <label>Weight (kg)</label>
-          <input id="wt" type="number" min="0.1" step="0.1" value="1" />
-        </div>
-        <div>
-          <label>Preferred Vehicle</label>
-          <select id="vehicle">
-            <option>Bike</option>
-            <option>Auto</option>
-            <option>Car</option>
-          </select>
-        </div>
-      </div>
-      <div class="row" style="margin-top:12px; justify-content:space-between;">
-        <div>
-          <div class="muted">Est. Fare</div>
-          <div class="price" id="fare">₹—</div>
-        </div>
-        <div class="row">
-          <button id="calc">Calculate</button>
-          <button id="book">Request Pickup</button>
-        </div>
+
+        <button class="btn-genie" onclick="createGenieOrder()">Assign Genie Runner</button>
       </div>
     </div>
 
-    <div class="card status" id="status" style="display:none;">
-      <div class="badge">Order <span id="oid"></span></div>
-      <div>📍 <strong id="sumFrom"></strong> → <strong id="sumTo"></strong></div>
-      <div>🧲 Status: <span id="stage">Searching for a partner…</span></div>
-      <div class="muted">ETA: <span id="eta">—</span></div>
+    <div class="hero-visual">
+      <img src="https://encrypted-tbn1.gstatic.com/licensed-image?q=tbn:ANd9GcQIHBocPZLCSRFxIEmBuJy1bxQKunRotDjyV9UXh5xb-D_ilptDk1oUZKm7pzCriTISS_IzLqsUZImh_IQ" alt="Swiggy Genie Delivery Service">
     </div>
-  </main>
+  </section>
 
-<script>
-  const pickup = document.getElementById("pickup");
-  const drop = document.getElementById("drop");
-  const km = document.getElementById("km");
-  const wt = document.getElementById("wt");
-  const vehicle = document.getElementById("vehicle");
-  const itemType = document.getElementById("itemType");
-  const fareEl = document.getElementById("fare");
-  const calcBtn = document.getElementById("calc");
-  const bookBtn = document.getElementById("book");
+  <!-- Popular Genie Services Grid -->
+  <section id="services" class="services-section">
+    <div class="section-header">
+      <h2>Popular Genie Tasks</h2>
+      <p>Whatever you need moved, consider it done.</p>
+    </div>
 
-  function estimateFare() {
-    const d = Math.max(1, +km.value || 1);
-    const w = Math.max(0.1, +wt.value || 0.1);
-    const v = vehicle.value;
-    // Simple demo formula
-    const baseByVehicle = { Bike: 35, Auto: 45, Car: 60 }[v] || 35;
-    const perKm = { Bike: 8, Auto: 10, Car: 14 }[v] || 8;
-    const weightFee = Math.max(0, (w - 1)) * 5;
-    const typeFee = { Documents: 0, Food: 5, Package: 10 }[itemType.value] || 0;
-    const total = Math.round(baseByVehicle + d * perKm + weightFee + typeFee);
-    fareEl.textContent = `₹${total}`;
-    return total;
-  }
+    <div class="card-grid">
 
-  calcBtn.onclick = estimateFare;
+      <!-- Category 1 -->
+      <div class="service-card" onclick="selectQuickCategory('lunchbox', 'Forgotten Lunch Box')">
+        <div class="icon-circle">🍱</div>
+        <h3>Home Food Delivery</h3>
+        <p>Send warm home-cooked meals directly to your family or workplace.</p>
+        <span class="btn-link">Select Task &rarr;</span>
+      </div>
 
-  function randomId() {
-    return "GN" + Math.floor(100000 + Math.random()*900000);
-  }
+      <!-- Category 2 -->
+      <div class="service-card" onclick="selectQuickCategory('documents', 'Important Business Documents')">
+        <div class="icon-circle">📁</div>
+        <h3>Documents & Keys</h3>
+        <p>Instant secure transfer of office files, passports, or house keys.</p>
+        <span class="btn-link">Select Task &rarr;</span>
+      </div>
 
-  const statusCard = document.getElementById("status");
-  const oidEl = document.getElementById("oid");
-  const sumFrom = document.getElementById("sumFrom");
-  const sumTo = document.getElementById("sumTo");
-  const stageEl = document.getElementById("stage");
-  const etaEl = document.getElementById("eta");
+      <!-- Category 3 -->
+      <div class="service-card" onclick="selectQuickCategory('clothes', 'Laundry & Tailoring Items')">
+        <div class="icon-circle">👕</div>
+        <h3>Laundry Pick & Drop</h3>
+        <p>Send clothes for dry cleaning or pick up freshly ironed garments.</p>
+        <span class="btn-link">Select Task &rarr;</span>
+      </div>
 
-  bookBtn.onclick = () => {
-    if (!pickup.value || !drop.value) { alert("Please enter pickup & drop"); return; }
-    const total = estimateFare();
-    statusCard.style.display = "grid";
-    oidEl.textContent = randomId();
-    sumFrom.textContent = pickup.value;
-    sumTo.textContent = drop.value;
-    stageEl.textContent = "Looking for a delivery partner…";
-    etaEl.textContent = "45–60 mins";
+      <!-- Category 4 -->
+      <div class="service-card" onclick="selectQuickCategory('groceries', 'Urgent Medicines & OTC Products')">
+        <div class="icon-circle">💊</div>
+        <h3>Medicine & Pharmacy</h3>
+        <p>Pick up emergency medicines and health supplies from local chemists.</p>
+        <span class="btn-link">Select Task &rarr;</span>
+      </div>
 
-    // Simulated status progression
-    setTimeout(()=> stageEl.textContent = "Partner assigned: Ravi (Bike) 🚲", 1500);
-    setTimeout(()=> stageEl.textContent = "Partner at pickup location", 3500);
-    setTimeout(()=> { stageEl.textContent = "Picked up · On the way"; etaEl.textContent = "20–30 mins"; }, 5500);
-    setTimeout(()=> stageEl.textContent = "Delivered ✅ · Fare " + fareEl.textContent, 9000);
-  };
+    </div>
+  </section>
 
-  // initial fare
-  estimateFare();
-</script>
+  <!-- Order Tracking Animation Modal -->
+  <div id="tracking-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeTrackingModal()">&times;</span>
+      <h2>⚡ Genie Executive Assigned!</h2>
+      <p class="modal-sub">Your runner is on the way to the pick-up location.</p>
+
+      <div class="status-tracker">
+        <div class="step active">1. Order Placed</div>
+        <div class="step active">2. Runner Assigned</div>
+        <div class="step animated">3. Picking Up Item</div>
+        <div class="step">4. Delivered</div>
+      </div>
+
+      <div class="order-summary" id="order-summary-details">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <button class="btn-genie" onclick="closeTrackingModal()">Got it</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 Swiggy Genie Clone. Crafted with HTML, CSS, JavaScript, and Docker.</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>

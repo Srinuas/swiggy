@@ -1,151 +1,166 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Dineout — Demo</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-  :root { --brand:#ff2e63; --bg:#fff7fa; --text:#222; --muted:#666; --border:#f1d6e0; --card:#fff; }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
-  header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);z-index:10}
-  .nav{max-width:1000px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center}
-  .logo{font-weight:900;color:var(--brand);font-size:20px}
-  .container{max-width:1000px;margin:0 auto;padding:16px;display:grid;gap:14px}
-  .bar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
-  @media (max-width:820px){.bar{grid-template-columns:1fr 1fr}}
-  input,select{width:100%;padding:10px 12px;border:1px solid #eee;border-radius:10px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media (max-width:820px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;display:grid;gap:8px}
-  .thumb{height:140px;border-radius:10px;background:linear-gradient(135deg,#ffd0df,#ffc2d7);display:grid;place-items:center;color:#7a1330;font-weight:800}
-  .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
-  .meta{font-size:13px;color:var(--muted)}
-  .slot{all:unset;border:1px solid #eee;padding:8px 10px;border-radius:8px;background:#fff;cursor:pointer}
-  .slot.sel{background:#111;color:#fff}
-  .slots{display:flex;gap:8px;flex-wrap:wrap}
-  button.cta{all:unset;background:var(--brand);color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:800;text-align:center}
-  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:999px;display:none}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swiggy Dineout - Reserve Tables & Flat Discounts</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <div class="logo">🍽️ Dineout</div>
-      <input id="q" placeholder="Search restaurants or cuisines (e.g., buffet, biryani, vegan)" />
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="logo-swiggy">Swiggy</span>
+      <span class="logo-dineout">DINEOUT</span>
     </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="#featured">Featured Venues</a></li>
+        <li><a href="#offers">Bank Offers</a></li>
+        <li><a href="#bookings">My Bookings (<span id="booking-count">0</span>)</a></li>
+      </ul>
+    </nav>
+    <button class="btn-location">📍 Select City</button>
   </header>
 
-  <main class="container">
-    <div class="bar">
-      <input id="date" type="date" />
-      <input id="time" type="time" />
-      <select id="party">
-        <option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option>
-      </select>
-      <button class="cta" id="find">Find Tables</button>
+  <!-- Hero Banner -->
+  <section class="hero">
+    <div class="hero-text">
+      <span class="tagline">GIRF & Premium Dining</span>
+      <h1>Eat Out & Save Up To <span>50% OFF</span></h1>
+      <p>Book tables at fine-dining restaurants, pubs, and luxury buffets with instant bill savings.</p>
+      
+      <div class="search-bar">
+        <input type="text" id="restaurant-search" placeholder="Search by restaurant name, cuisine, or location..." onkeyup="filterRestaurants()">
+        <button class="btn-search">Explore</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcTd7-BA668lhmxCiVQnOZDWNodR4Cf04sUbDSWqeuemfk-19hE_Kiz0MLpXRZxVu1GSRR9Z52YkVHPwN70" alt="Fine Dining Ambience">
+    </div>
+  </section>
+
+  <!-- Restaurant Grid Section -->
+  <section id="featured" class="dining-section">
+    <div class="section-header">
+      <h2>Top Dining Destinations</h2>
+      <p>Exclusive table reservations with guaranteed bill discounts</p>
     </div>
 
-    <div class="grid" id="grid"></div>
-  </main>
+    <div class="card-grid" id="restaurant-grid">
 
-  <div class="toast" id="toast">Reservation confirmed 🎉</div>
-
-<script>
-  const data = [
-    { name: "Barbeque Nation", cuisines:["BBQ","Buffet"], area:"Hitech City", rating:4.4, price:"₹₹₹" },
-    { name: "AB's Absolute Barbecues", cuisines:["BBQ","Grill"], area:"Gachibowli", rating:4.5, price:"₹₹₹" },
-    { name: "Chutneys", cuisines:["South Indian"], area:"Jubilee Hills", rating:4.3, price:"₹₹" },
-    { name: "Ohri's Serengeti", cuisines:["North Indian"], area:"Banjara Hills", rating:4.2, price:"₹₹₹" },
-    { name: "China Bistro", cuisines:["Chinese"], area:"Film Nagar", rating:4.3, price:"₹₹" },
-    { name: "Conçu", cuisines:["Desserts","Cafe"], area:"Jubilee Hills", rating:4.4, price:"₹₹" },
-  ];
-
-  const state = { q:"", date:"", time:"", party:"2", slotSel:null };
-
-  const qEl = document.getElementById("q");
-  const dateEl = document.getElementById("date");
-  const timeEl = document.getElementById("time");
-  const partyEl = document.getElementById("party");
-  const grid = document.getElementById("grid");
-  const toast = document.getElementById("toast");
-
-  function todayStr(offsetDays=0){
-    const d = new Date();
-    d.setDate(d.getDate()+offsetDays);
-    return d.toISOString().slice(0,10);
-  }
-  dateEl.value = todayStr(0);
-  timeEl.value = "19:30";
-
-  function genSlots() {
-    const base = ["18:30","19:00","19:30","20:00","20:30","21:00","21:30"];
-    return base;
-  }
-
-  function draw() {
-    let list = [...data];
-    if (state.q) {
-      const q = state.q.toLowerCase();
-      list = list.filter(r =>
-        r.name.toLowerCase().includes(q) ||
-        r.cuisines.join(",").toLowerCase().includes(q) ||
-        r.area.toLowerCase().includes(q)
-      );
-    }
-    grid.innerHTML = "";
-    list.forEach(r => {
-      const card = document.createElement("div");
-      card.className = "card";
-      const slots = genSlots();
-      card.innerHTML = `
-        <div class="thumb">${r.area}</div>
-        <div class="row">
-          <div>
-            <div style="font-weight:800">${r.name}</div>
-            <div class="meta">${r.cuisines.join(" • ")}</div>
-            <div class="meta">⭐ ${r.rating} · ${r.price}</div>
+      <!-- Card 1 -->
+      <div class="dine-card" data-name="the biere club brewery pub craft beer">
+        <div class="card-badge">Instant 25% OFF Bill</div>
+        <div class="card-img">
+          <img src="https://encrypted-tbn1.gstatic.com/licensed-image?q=tbn:ANd9GcQIHBocPZLCSRFxIEmBuJy1bxQKunRotDjyV9UXh5xb-D_ilptDk1oUZKm7pzCriTISS_IzLqsUZImh_IQ" alt="Microbrewery Dining">
+          <span class="rating">★ 4.8</span>
+        </div>
+        <div class="card-body">
+          <h3>The Biere Club & Brewery</h3>
+          <p class="cuisine">Continental • Craft Beer • Finger Food</p>
+          <p class="location">📍 Indiranagar, Bengaluru</p>
+          <div class="card-footer">
+            <span class="cost">₹1,800 for two</span>
+            <button class="btn-reserve" onclick="openBookingModal('The Biere Club')">Book Table</button>
           </div>
-          <div class="meta">📍 ${r.area}</div>
         </div>
-        <div class="slots">
-          ${slots.map(s=>`<button class="slot" data-s="${s}">${s}</button>`).join("")}
+      </div>
+
+      <!-- Card 2 -->
+      <div class="dine-card" data-name="absolute barbecues grill buffet live counter">
+        <div class="card-badge">Flat 30% OFF Buffet</div>
+        <div class="card-img">
+          <img src="https://encrypted-tbn1.gstatic.com/licensed-image?q=tbn:ANd9GcSYSn4aDI-zWiIXo5RfxdY_R7KCfMIeLHMt3RNKYcDKyhvJ9jLLO8Sz_aRNHZG69eOEzaPTVMk4VeMIbfQ" alt="Barbecue Grill Dining">
+          <span class="rating">★ 4.6</span>
         </div>
-        <div class="row">
-          <div class="meta">Date: ${dateEl.value} · Time: ${timeEl.value} · Party: ${partyEl.value}</div>
-          <button class="cta">Reserve</button>
+        <div class="card-body">
+          <h3>Absolute Barbecues</h3>
+          <p class="cuisine">North Indian • BBQ • Desserts</p>
+          <p class="location">📍 Jubilee Hills, Hyderabad</p>
+          <div class="card-footer">
+            <span class="cost">₹1,400 for two</span>
+            <button class="btn-reserve" onclick="openBookingModal('Absolute Barbecues')">Book Table</button>
+          </div>
         </div>
-      `;
-      const slotBtns = card.querySelectorAll(".slot");
-      let selected = null;
-      slotBtns.forEach(b=>{
-        b.onclick = () => {
-          slotBtns.forEach(x=>x.classList.remove("sel"));
-          b.classList.add("sel");
-          selected = b.dataset.s;
-        };
-      });
-      card.querySelector(".cta").onclick = () => {
-        if (!selected) { alert("Please select a time slot"); return; }
-        showToast(`Reserved at ${r.name} • ${dateEl.value} ${selected} • ${partyEl.value} people`);
-      };
-      grid.appendChild(card);
-    });
-  }
+      </div>
 
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.style.display = "block";
-    setTimeout(()=> toast.style.display="none", 2500);
-  }
+      <!-- Card 3 -->
+      <div class="dine-card" data-name="toscano italian pizza pasta wine">
+        <div class="card-badge">15% Extra on HDFC Cards</div>
+        <div class="card-img">
+          <img src="https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcQwwZkrUTSz5NfjJPE9dTHuzEXXThzyxBS_LTbFDuc1q67gWTW7eQgb7qmKNyR_Qx58KlBgbPjD8L0WclI" alt="Italian Fine Dining">
+          <span class="rating">★ 4.9</span>
+        </div>
+        <div class="card-body">
+          <h3>Toscano Fine Dining</h3>
+          <p class="cuisine">Italian • Wine Bar • Pastas</p>
+          <p class="location">📍 UB City, Bengaluru</p>
+          <div class="card-footer">
+            <span class="cost">₹2,200 for two</span>
+            <button class="btn-reserve" onclick="openBookingModal('Toscano Fine Dining')">Book Table</button>
+          </div>
+        </div>
+      </div>
 
-  document.getElementById("find").onclick = draw;
-  qEl.addEventListener("input", e=> { state.q = e.target.value.trim(); draw(); });
-  partyEl.onchange = () => draw();
-  timeEl.onchange = () => draw();
-  dateEl.onchange = () => draw();
+      <!-- Card 4 -->
+      <div class="dine-card" data-name="pangea rooftop lounge cocktails sushi">
+        <div class="card-badge">Flat 20% OFF Total Bill</div>
+        <div class="card-img">
+          <img src="https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcTVdCAgiIGj8P4YrpGwdQHrstFXiZugtHNxyHYsjCgSudy1NLF303wvvryNpNup1L4gNyVr5MtSzmBmT6g" alt="Rooftop Lounge">
+          <span class="rating">★ 4.7</span>
+        </div>
+        <div class="card-body">
+          <h3>Pangea Rooftop Lounge</h3>
+          <p class="cuisine">Asian • Cocktails • Sushi</p>
+          <p class="location">📍 Bandra West, Mumbai</p>
+          <div class="card-footer">
+            <span class="cost">₹2,500 for two</span>
+            <button class="btn-reserve" onclick="openBookingModal('Pangea Rooftop Lounge')">Book Table</button>
+          </div>
+        </div>
+      </div>
 
-  draw();
-</script>
+    </div>
+  </section>
+
+  <!-- Reservation Modal -->
+  <div id="booking-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeBookingModal()">&times;</span>
+      <h2 id="modal-title">Reserve Table</h2>
+      <p id="modal-subtitle">Confirm your slot for instant dine-in discounts.</p>
+      
+      <form id="reservation-form" onsubmit="confirmReservation(event)">
+        <label for="guest-count">Number of Guests</label>
+        <select id="guest-count" required>
+          <option value="2">2 People</option>
+          <option value="4">4 People</option>
+          <option value="6">6 People</option>
+          <option value="8">8+ People (Party)</option>
+        </select>
+
+        <label for="booking-date">Date</label>
+        <input type="date" id="booking-date" required>
+
+        <label for="booking-time">Time Slot</label>
+        <select id="booking-time" required>
+          <option value="07:00 PM">07:00 PM</option>
+          <option value="08:00 PM">08:00 PM</option>
+          <option value="09:00 PM">09:00 PM</option>
+        </select>
+
+        <button type="submit" class="btn-confirm">Confirm Reservation</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 Swiggy Dineout Clone. Crafted with HTML, CSS, JavaScript, and Docker.</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
