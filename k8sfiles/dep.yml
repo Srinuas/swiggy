@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: food-container
-        image: srinuas/swiggy:genie
+        image: srinuas/swiggy:dineout
         imagePullPolicy: Always
         ports:
         - containerPort: 80
